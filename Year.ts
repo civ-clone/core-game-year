@@ -7,12 +7,15 @@ import {
   instance as turnInstance,
 } from '@civ-clone/core-turn-based-game/Turn';
 import { Year as YearRule, IYearRegistry } from './Rules/Year';
+import DataObject, {
+  IDataObject,
+} from '@civ-clone/core-data-object/DataObject';
 
-export interface IYear {
+export interface IYear extends IDataObject {
   value(turn: number): number;
 }
 
-export class Year implements IYear {
+export class Year extends DataObject implements IYear {
   #cache: Map<number, number> = new Map();
   #ruleRegistry: RuleRegistry;
   #turn: Turn;
@@ -21,8 +24,12 @@ export class Year implements IYear {
     turn: Turn = turnInstance,
     ruleRegistry: RuleRegistry = ruleRegistryInstance
   ) {
+    super();
+
     this.#ruleRegistry = ruleRegistry;
     this.#turn = turn;
+
+    this.addKey('value');
   }
 
   value(turn: number = this.#turn.value()): number {

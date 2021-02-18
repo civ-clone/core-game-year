@@ -18,13 +18,16 @@ exports.instance = exports.Year = void 0;
 const RuleRegistry_1 = require("@civ-clone/core-rule/RuleRegistry");
 const Turn_1 = require("@civ-clone/core-turn-based-game/Turn");
 const Year_1 = require("./Rules/Year");
-class Year {
+const DataObject_1 = require("@civ-clone/core-data-object/DataObject");
+class Year extends DataObject_1.default {
     constructor(turn = Turn_1.instance, ruleRegistry = RuleRegistry_1.instance) {
+        super();
         _cache.set(this, new Map());
         _ruleRegistry.set(this, void 0);
         _turn.set(this, void 0);
         __classPrivateFieldSet(this, _ruleRegistry, ruleRegistry);
         __classPrivateFieldSet(this, _turn, turn);
+        this.addKey('value');
     }
     value(turn = __classPrivateFieldGet(this, _turn).value()) {
         if (!__classPrivateFieldGet(this, _cache).has(turn)) {
