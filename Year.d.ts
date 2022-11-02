@@ -1,8 +1,9 @@
-import { RuleRegistry } from '@civ-clone/core-rule/RuleRegistry';
-import { Turn } from '@civ-clone/core-turn-based-game/Turn';
-import DataObject, {
+import {
+  DataObject,
   IDataObject,
 } from '@civ-clone/core-data-object/DataObject';
+import { RuleRegistry } from '@civ-clone/core-rule/RuleRegistry';
+import { Turn } from '@civ-clone/core-turn-based-game/Turn';
 export interface IYear extends IDataObject {
   value(turn: number): number;
 }

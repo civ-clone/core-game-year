@@ -1,4 +1,3 @@
 # core-game-year
 
-This is a template repo.
-
+Core class associated to the current `Year`. The `Rule`s control how the year advances and can start

@@ -1,4 +1,8 @@
 import {
+  DataObject,
+  IDataObject,
+} from '@civ-clone/core-data-object/DataObject';
+import {
   RuleRegistry,
   instance as ruleRegistryInstance,
 } from '@civ-clone/core-rule/RuleRegistry';
@@ -6,10 +10,7 @@ import {
   Turn,
   instance as turnInstance,
 } from '@civ-clone/core-turn-based-game/Turn';
-import { Year as YearRule, IYearRegistry } from './Rules/Year';
-import DataObject, {
-  IDataObject,
-} from '@civ-clone/core-data-object/DataObject';
+import YearRule from './Rules/Year';
 
 export interface IYear extends IDataObject {
   value(turn: number): number;
@@ -34,10 +35,7 @@ export class Year extends DataObject implements IYear {
 
   value(turn: number = this.#turn.value()): number {
     if (!this.#cache.has(turn)) {
-      const [year] = (this.#ruleRegistry as IYearRegistry).process(
-        YearRule,
-        turn
-      );
+      const [year] = this.#ruleRegistry.process(YearRule, turn);
 
       this.#cache.set(turn, year);
     }
