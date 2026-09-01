@@ -8,7 +8,9 @@ export interface IYear extends IDataObject {
   value(turn: number): number;
 }
 export declare class Year extends DataObject implements IYear {
-  #private;
+  private _cache;
+  private _ruleRegistry;
+  private _turn;
   constructor(turn?: Turn, ruleRegistry?: RuleRegistry);
   value(turn?: number): number;
 }

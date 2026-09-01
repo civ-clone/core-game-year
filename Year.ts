@@ -17,9 +17,9 @@ export interface IYear extends IDataObject {
 }
 
 export class Year extends DataObject implements IYear {
-  #cache: Map<number, number> = new Map();
-  #ruleRegistry: RuleRegistry;
-  #turn: Turn;
+  private _cache: Map<number, number> = new Map();
+  private _ruleRegistry: RuleRegistry;
+  private _turn: Turn;
 
   constructor(
     turn: Turn = turnInstance,
@@ -27,20 +27,20 @@ export class Year extends DataObject implements IYear {
   ) {
     super();
 
-    this.#ruleRegistry = ruleRegistry;
-    this.#turn = turn;
+    this._ruleRegistry = ruleRegistry;
+    this._turn = turn;
 
     this.addKey('value');
   }
 
-  value(turn: number = this.#turn.value()): number {
-    if (!this.#cache.has(turn)) {
-      const [year] = this.#ruleRegistry.process(YearRule, turn);
+  value(turn: number = this._turn.value()): number {
+    if (!this._cache.has(turn)) {
+      const [year] = this._ruleRegistry.process(YearRule, turn);
 
-      this.#cache.set(turn, year);
+      this._cache.set(turn, year);
     }
 
-    const value = this.#cache.get(turn);
+    const value = this._cache.get(turn);
 
     if (typeof value !== 'number') {
       throw new TypeError('Invalid cache result.');
