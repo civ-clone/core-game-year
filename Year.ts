@@ -17,6 +17,7 @@ export interface IYear extends IDataObject {
 }
 
 export class Year extends DataObject implements IYear {
+  static readonly transient = ['_cache', '_ruleRegistry', '_turn'];
   private _cache: Map<number, number> = new Map();
   private _ruleRegistry: RuleRegistry;
   private _turn: Turn;

@@ -26,6 +26,7 @@ class Year extends DataObject_1.DataObject {
     }
 }
 exports.Year = Year;
+Year.transient = ['_cache', '_ruleRegistry', '_turn'];
 exports.instance = new Year();
 exports.default = Year;
 //# sourceMappingURL=Year.js.map
