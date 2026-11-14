@@ -10,7 +10,7 @@ export interface IYear extends IDataObject {
 export declare class Year extends DataObject implements IYear {
   static readonly transient: string[];
   private _cache;
-  private _keyed;
+  private _keyState;
   private _ruleRegistry;
   private _turn;
   constructor(turn?: Turn, ruleRegistry?: RuleRegistry);

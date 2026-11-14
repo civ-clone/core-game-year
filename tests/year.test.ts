@@ -121,4 +121,65 @@ describe('Year', (): void => {
 
     expect(asked).eql([2, 2]);
   });
+
+  it('keeps lists of answers apart however they would join', (): void => {
+    const { asked, ruleRegistry, year } = setUp();
+    let first = 'x:y',
+      second = 'z';
+
+    ruleRegistry.register(
+      new YearKey(new Effect(() => first)),
+      new YearKey(new Effect(() => second))
+    );
+
+    year.value(4);
+    first = 'x';
+    second = 'y:z';
+    year.value(4);
+
+    expect(asked).eql([4, 4]);
+  });
+
+  it('tells an undefined answer from an empty one', (): void => {
+    const { asked, ruleRegistry, year } = setUp();
+    let answer: string | undefined = undefined;
+
+    ruleRegistry.register(new YearKey(new Effect(() => answer as any)));
+
+    year.value(4);
+    answer = '';
+    year.value(4);
+
+    expect(asked).eql([4, 4]);
+  });
+
+  it('stays keyed after a YearKey rule is unregistered, and still gives the right year', (): void => {
+    const { asked, ruleRegistry, year } = setUp(),
+      keyRule = new YearKey(new Effect(() => 'a'));
+
+    ruleRegistry.register(keyRule);
+    year.value(4);
+    ruleRegistry.unregister(keyRule);
+
+    expect(year.value(4)).equal(4 * 20 - 4020);
+    expect(asked).eql([4, 4]);
+  });
+
+  it('shares one listener between every Year on a registry', (): void => {
+    const ruleRegistry = new RuleRegistry(),
+      listeners: unknown[] = [],
+      onRegister = ruleRegistry.onRegister.bind(ruleRegistry);
+
+    ruleRegistry.onRegister = (listener) => {
+      listeners.push(listener);
+
+      return onRegister(listener);
+    };
+
+    new Year(new Turn(), ruleRegistry);
+    new Year(new Turn(), ruleRegistry);
+    new Year(new Turn(), ruleRegistry);
+
+    expect(listeners).length(1);
+  });
 });

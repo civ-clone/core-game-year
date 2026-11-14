@@ -13,15 +13,45 @@ import {
 import YearKey from './Rules/YearKey';
 import YearRule from './Rules/Year';
 
+// Whether a rule registry has ever had a `YearKey` rule. One per registry, shared by every `Year` on it: the registry's
+//  listener holds this object, never a `Year`, so a `Year` (and its cache) goes once nothing else holds it, and a
+//  registry gets one listener however many `Year`s are made on it. A registry nothing holds any more takes its entry
+//  with it.
+type KeyState = { keyed: boolean };
+
+const keyStates: WeakMap<RuleRegistry, KeyState> = new WeakMap();
+
+const keyStateOf = (ruleRegistry: RuleRegistry): KeyState => {
+  const existing = keyStates.get(ruleRegistry);
+
+  if (existing) {
+    return existing;
+  }
+
+  const state: KeyState = {
+    keyed: ruleRegistry.get(YearKey).length > 0,
+  };
+
+  ruleRegistry.onRegister((rule): void => {
+    if (rule instanceof YearKey) {
+      state.keyed = true;
+    }
+  });
+
+  keyStates.set(ruleRegistry, state);
+
+  return state;
+};
+
 export interface IYear extends IDataObject {
   value(turn: number): number;
 }
 
 export class Year extends DataObject implements IYear {
-  static readonly transient = ['_cache', '_keyed', '_ruleRegistry', '_turn'];
+  static readonly transient = ['_cache', '_keyState', '_ruleRegistry', '_turn'];
   private _cache: Map<number | string, number> = new Map();
   // Whether any `YearKey` rule has been registered: until one is, a year is kept under its turn alone.
-  private _keyed: boolean;
+  private _keyState: KeyState;
   private _ruleRegistry: RuleRegistry;
   private _turn: Turn;
 
@@ -33,13 +63,7 @@ export class Year extends DataObject implements IYear {
 
     this._ruleRegistry = ruleRegistry;
     this._turn = turn;
-    this._keyed = ruleRegistry.get(YearKey).length > 0;
-
-    ruleRegistry.onRegister((rule): void => {
-      if (rule instanceof YearKey) {
-        this._keyed = true;
-      }
-    });
+    this._keyState = keyStateOf(ruleRegistry);
 
     this.addKey('value');
   }
@@ -63,13 +87,14 @@ export class Year extends DataObject implements IYear {
   }
 
   // The turn alone until a `YearKey` rule is registered, as before there were any, so a ruleset without them pays
-  //  nothing; then the turn and every `YearKey` rule's answer, asked once per call.
+  //  nothing; then the turn and every `YearKey` rule's answer, asked once per call, as JSON so that no two lists of
+  //  answers give the same key (an answer may contain any separator, and `undefined` becomes `null`).
   private key(turn: number): number | string {
-    if (!this._keyed) {
+    if (!this._keyState.keyed) {
       return turn;
     }
 
-    return [turn, ...this._ruleRegistry.process(YearKey)].join(':');
+    return JSON.stringify([turn, ...this._ruleRegistry.process(YearKey)]);
   }
 }
 
