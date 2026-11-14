@@ -11,17 +11,24 @@
   "private": false,
   "scripts": {
     "build": "npm run ts:compile && npm run prettier:format",
-    "prettier:check": "prettier --config .prettierrc '**/*.ts'",
+    "prettier:check": "prettier --config .prettierrc --check '**/*.ts'",
     "prettier:format": "prettier --config .prettierrc '**/*.ts' --write",
+    "test": "ts-mocha ./tests/*.test.ts",
     "ts:compile": "tsc --build tsconfig.json"
   },
   "devDependencies": {
-    "prettier": "^2.1.2",
-    "typescript": "^4.0.3"
+    "@types/chai": "^4.0.0",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "^16.0.0",
+    "chai": "^4.0.0",
+    "mocha": "^10.0.0",
+    "prettier": "^2.8.8",
+    "ts-mocha": "^10.0.0",
+    "typescript": "^4.0.0"
   },
   "dependencies": {
     "@civ-clone/core-data-object": "^0.1.15",
-    "@civ-clone/core-rule": "^0.1.0",
+    "@civ-clone/core-rule": "^0.1.7",
     "@civ-clone/core-turn-based-game": "^0.1.0"
   }
 }
