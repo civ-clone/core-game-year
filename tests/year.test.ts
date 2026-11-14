@@ -165,6 +165,28 @@ describe('Year', (): void => {
     expect(asked).eql([4, 4]);
   });
 
+  it('keys a Year rebuilt without its constructor, as a loaded game rebuilds it, by its rule registry alone', (): void => {
+    const { asked, ruleRegistry, turn } = setUp();
+    let level = 'King';
+
+    ruleRegistry.register(new YearKey(new Effect(() => level)));
+
+    // What core-game's `Game.inject` gives a rebuilt `Year`: its transient fields, and nothing else.
+    const rebuilt: Year = Object.assign(Object.create(Year.prototype), {
+      _cache: new Map(),
+      _ruleRegistry: ruleRegistry,
+      _turn: turn,
+    });
+
+    expect(Year.transient).eql(['_cache', '_ruleRegistry', '_turn']);
+    expect(rebuilt.value(3)).equal(-3960);
+
+    level = 'Deity';
+    rebuilt.value(3);
+
+    expect(asked).eql([3, 3]);
+  });
+
   it('shares one listener between every Year on a registry', (): void => {
     const ruleRegistry = new RuleRegistry(),
       listeners: unknown[] = [],

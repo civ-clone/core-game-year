@@ -48,10 +48,8 @@ export interface IYear extends IDataObject {
 }
 
 export class Year extends DataObject implements IYear {
-  static readonly transient = ['_cache', '_keyState', '_ruleRegistry', '_turn'];
+  static readonly transient = ['_cache', '_ruleRegistry', '_turn'];
   private _cache: Map<number | string, number> = new Map();
-  // Whether any `YearKey` rule has been registered: until one is, a year is kept under its turn alone.
-  private _keyState: KeyState;
   private _ruleRegistry: RuleRegistry;
   private _turn: Turn;
 
@@ -63,7 +61,9 @@ export class Year extends DataObject implements IYear {
 
     this._ruleRegistry = ruleRegistry;
     this._turn = turn;
-    this._keyState = keyStateOf(ruleRegistry);
+
+    // The registry's one listener, made with its first `Year` as before.
+    keyStateOf(ruleRegistry);
 
     this.addKey('value');
   }
@@ -88,9 +88,11 @@ export class Year extends DataObject implements IYear {
 
   // The turn alone until a `YearKey` rule is registered, as before there were any, so a ruleset without them pays
   //  nothing; then the turn and every `YearKey` rule's answer, asked once per call, as JSON so that no two lists of
-  //  answers give the same key (an answer may contain any separator, and `undefined` becomes `null`).
+  //  answers give the same key (an answer may contain any separator, and `undefined` becomes `null`). Whether there
+  //  are any is the registry's, looked up each time rather than kept on the `Year`, so a `Year` rebuilt from a save
+  //  without its constructor (core-game's `Game.inject`) needs nothing beyond its rule registry.
   private key(turn: number): number | string {
-    if (!this._keyState.keyed) {
+    if (!keyStateOf(this._ruleRegistry).keyed) {
       return turn;
     }
 

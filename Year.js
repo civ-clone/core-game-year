@@ -29,7 +29,8 @@ class Year extends DataObject_1.DataObject {
         this._cache = new Map();
         this._ruleRegistry = ruleRegistry;
         this._turn = turn;
-        this._keyState = keyStateOf(ruleRegistry);
+        // The registry's one listener, made with its first `Year` as before.
+        keyStateOf(ruleRegistry);
         this.addKey('value');
     }
     value(turn = this._turn.value()) {
@@ -46,16 +47,18 @@ class Year extends DataObject_1.DataObject {
     }
     // The turn alone until a `YearKey` rule is registered, as before there were any, so a ruleset without them pays
     //  nothing; then the turn and every `YearKey` rule's answer, asked once per call, as JSON so that no two lists of
-    //  answers give the same key (an answer may contain any separator, and `undefined` becomes `null`).
+    //  answers give the same key (an answer may contain any separator, and `undefined` becomes `null`). Whether there
+    //  are any is the registry's, looked up each time rather than kept on the `Year`, so a `Year` rebuilt from a save
+    //  without its constructor (core-game's `Game.inject`) needs nothing beyond its rule registry.
     key(turn) {
-        if (!this._keyState.keyed) {
+        if (!keyStateOf(this._ruleRegistry).keyed) {
             return turn;
         }
         return JSON.stringify([turn, ...this._ruleRegistry.process(YearKey_1.default)]);
     }
 }
 exports.Year = Year;
-Year.transient = ['_cache', '_keyState', '_ruleRegistry', '_turn'];
+Year.transient = ['_cache', '_ruleRegistry', '_turn'];
 exports.instance = new Year();
 exports.default = Year;
 //# sourceMappingURL=Year.js.map
