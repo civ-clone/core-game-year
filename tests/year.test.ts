@@ -2,6 +2,7 @@ import Effect from '@civ-clone/core-rule/Effect';
 import RuleRegistry from '@civ-clone/core-rule/RuleRegistry';
 import Turn from '@civ-clone/core-turn-based-game/Turn';
 import Year from '../Year';
+import YearKey from '../Rules/YearKey';
 import YearRule from '../Rules/Year';
 import { expect } from 'chai';
 
@@ -51,5 +52,73 @@ describe('Year', (): void => {
     const year = new Year(new Turn(), new RuleRegistry());
 
     expect(() => year.value(1)).throw(TypeError);
+  });
+
+  it('works a year out again when what a YearKey rule reads changes, and keeps it per key', (): void => {
+    const { asked, ruleRegistry, year } = setUp();
+    let level = 'King';
+
+    year.value(5);
+
+    ruleRegistry.register(new YearKey(new Effect(() => level)));
+
+    year.value(5);
+    year.value(5);
+
+    level = 'Deity';
+
+    year.value(5);
+
+    level = 'King';
+
+    year.value(5);
+
+    // Once before any key, then once each for King and Deity.
+    expect(asked).eql([5, 5, 5]);
+  });
+
+  it('keys by every YearKey rule', (): void => {
+    const { asked, ruleRegistry, year } = setUp();
+    let size = 'normal',
+      launch: string | number = 'none';
+
+    ruleRegistry.register(
+      new YearKey(new Effect(() => size)),
+      new YearKey(new Effect(() => launch))
+    );
+
+    year.value(7);
+    size = 'large';
+    year.value(7);
+    launch = 3;
+    year.value(7);
+    year.value(7);
+
+    expect(asked).eql([7, 7, 7]);
+  });
+
+  it('keys by the YearKey rules registered before it was made, too', (): void => {
+    const ruleRegistry = new RuleRegistry(),
+      asked: number[] = [];
+    let level = 1;
+
+    ruleRegistry.register(
+      new YearKey(new Effect(() => level)),
+      new YearRule(
+        new Effect((value: number): number => {
+          asked.push(value);
+
+          return value;
+        })
+      )
+    );
+
+    const year = new Year(new Turn(), ruleRegistry);
+
+    year.value(2);
+    level = 2;
+    year.value(2);
+
+    expect(asked).eql([2, 2]);
   });
 });
